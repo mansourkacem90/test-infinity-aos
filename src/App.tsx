@@ -8,14 +8,17 @@ import {
 } from "react-router-dom";
 
 import { useTasksList } from "../src/custum-hooks/use-tasks-listt";
+import { useUserAuth } from "../src/custum-hooks/useUserAuth";
 import { ListContext } from "../src/context/tasks-list";
+import { UserContext } from '../src/context/user';
+
 import "./App.scss";
 
 const SignInComponent = lazy(() => import("./components/pages/sign-in"));
 const TasksComponent = lazy(() => import("./components/pages/tasks"));
 
 function App() {
-  const { logIn, logOut, isAuthenticated } = useUserAuth();
+  const { logIn, logOut, isAuthenticated, message } = useUserAuth();
   return (
     <Suspense fallback={<div>Loading... </div>}>
       <Router>
@@ -37,24 +40,54 @@ function App() {
                   </Link>
                 </li>
                 <li className="nav-item">
-                  <Link className="nav-link" to={"/sign-in"}>
+                  <Link className="nav-link" to={"/sign-in"} onClick={logOut}>
                     Deconnexion
                   </Link>
                 </li>
               </ul>
             </div>
           </nav>
-          <ListContext.Provider value={{ ...useTasksList() }}>
-            <div className="content-wrapper">
-              <Switch>
-                <Route exact={true} path="/">
-                  <Redirect to={"/sign-in"} />
-                </Route>
-                <Route path="/sign-in" component={SignInComponent} />
-                <Route path="/tasks" component={TasksComponent} />
-              </Switch>
-            </div>
-          </ListContext.Provider>
+          <UserContext.Provider value={{ logIn, logOut, isAuthenticated, message }}>
+            <ListContext.Provider value={{ ...useTasksList() }}>
+              <div className="content-wrapper">
+                <Switch>
+                  <Route exact={true} path="/">
+                    <Redirect to={"/sign-in"} />
+                  </Route>
+                  <Route
+                    path="/sign-in"
+                    render={() =>
+                      !isAuthenticated ? (
+                        <SignInComponent />
+                      ) : (
+                        <Redirect to={"/home"} />
+                      )
+                    }
+                  />
+                  <Route
+                    path="/tasks"
+                    render={() =>
+                      !isAuthenticated ? (
+                        <Redirect to={"/sign-in"} />
+                      ) : (
+                        <TasksComponent />
+                      )
+                    }
+                  />
+                  <Route
+                    path="/home"
+                    render={() =>
+                      !isAuthenticated ? (
+                        <Redirect to={"/sign-in"} />
+                      ) : (
+                        <TasksComponent />
+                      )
+                    }
+                  />
+                </Switch>
+              </div>
+            </ListContext.Provider>
+          </UserContext.Provider>
         </div>
       </Router>
     </Suspense>

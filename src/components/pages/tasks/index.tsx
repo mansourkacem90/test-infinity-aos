@@ -27,8 +27,8 @@ const Tasks = () => {
     <div className="task-container">
       <h2>Liste des taches</h2>
       <ListGroup type="inline">
-        {tasksList.map((task: any) => (
-          <ListGroupItem key={task.id}>
+        {tasksList.map((task: any,index:number) => (
+          <ListGroupItem key={index}>
             <div className="task-info">
               <span className="bolder">{task.name}</span>
               <span>{`: ${task.description} -`}</span>
